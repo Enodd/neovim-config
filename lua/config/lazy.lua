@@ -54,24 +54,53 @@ require("lazy").setup({
 
 require("conform").setup({
   formatters_by_ft = {
-    javascript = { "eslint_d_conditional" },
-    typescript = { "eslint_d_conditional" },
+    svelte = { "eslint_d" },
+    typescript = { "eslint_d" },
+    javascript = { "eslint_d" },
+    javascriptreact = { "eslint_d" },
+    typescriptreact = { "eslint_d" },
+    php = { "phpbcf" },
+    html = { "prettier" },
+    css = { "prettier" },
   },
   formatters = {
-    eslint_d_conditional = {
-      command = "eslint_d",
-      args = { "--fix", "--stdin", "--stdin-filename", "$FILENAME" },
-      stdin = true,
-      condition = function(ctx)
-        local util = require("conform.util")
-        -- Check if eslint config exists in project root
-        return util.root_has_file({
-          ".eslintrc",
-          ".eslintrc.js",
-          ".eslintrc.json",
-          "eslint.config.js",
-        })
+    eslint_d = {
+      condition = require("conform.util").root_file({
+        ".eslintrc",
+        ".eslintrc.js",
+        ".eslintrc.cjs",
+        ".eslintrc.mjs",
+        ".eslintrc.json",
+        "eslint.config.js",
+        "eslint.config.mjs",
+        "eslint.config.cjs",
+      }),
+      cwd = require("conform.util").root_file({ "package.json" }),
+    },
+    -- php_cs_fixer = {
+    --   command = "php-cs-fixer",
+    --   args = { "fix", "$FILENAME" },
+    --   stdin = false,
+    --   cwd = require("conform.util").root_file({ "composer.json" }),
+    -- },
+    phpbcf = {
+      command = "phpcbf",
+      args = function(ctx)
+        return {
+          "--standard=" .. vim.fn.getcwd() .. "/.phpcs.xml",
+          "$FILENAME",
+        }
       end,
+      stdin = false,
+      cwd = require("conform.util").root_file({ ".phpcs.xml", "composer.json" }),
+    },
+    prettier = {
+      prepend_args = {
+        "--tab-width",
+        "4",
+        "--use-tabs",
+        "false",
+      },
     },
   },
 })
